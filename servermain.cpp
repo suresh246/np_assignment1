@@ -130,10 +130,10 @@ int main(int argc, char *argv[]){
 
 	printf("server: waiting for connections BINJER...\n");
 	char msg[1500];
-	int MAXSZ=sizeof(msg)-1;
+	int MAXSZ=sizeof(msg);
 
 	int childCnt=0;
-	int readSize;
+	int readSize, numbytes;
 	char command[10];
 	char optionstring[128];
 	int optionint1;
@@ -152,19 +152,46 @@ int main(int argc, char *argv[]){
 		    s, sizeof s);
 	  printf("server: Connection %d from %s\n",childCnt, s);
 
-	  printf("server: Sending welcome \n");
+	  printf("server: Sending TEXT TCP 1.0\n\n\n");
 	  struct sockaddr_in *local_sin=(struct sockaddr_in*)&their_addr;
+
+	  sprintf(msg,"%s\n\n","TEXT TCP 1.0");
+
+	  int i;
+	  for (i=0; i<=strlen(msg); i++)
+	  {
+		  printf("%c\n",msg[i]);
+	  }
+      
+      numbytes = send(new_fd, msg, sizeof(msg), 0);
+
+      if(numbytes == -1 ){
+         perror("send");
+         exit(1);
+      }
+
+      printf("client (%d bytes) : send complete : %s\n",numbytes,msg);
+      bzero(msg,MAXSZ);
+
 
 	  while(1){
 	    readSize=recv(new_fd,&msg,MAXSZ,0);
 	    printf("Child[%d] (%s:%d): recv(%d) .\n", childCnt,s,ntohs(local_sin->sin_port),readSize);
-	    printf("received message from client:%s\nSize of the message:%d",msg,sizeof(msg));
+	    
+		if (msg[0] == 'O' & msg[1] == 'K' & msg[2] == '\n'){
+			printf("received message from client:%s\nSize of the message:%d",msg,sizeof(msg));
+
+			
+
+		}
 	    if(readSize==0){
 	      printf("Child [%d] died.\n",childCnt);
 	      close(new_fd);
 	      break;
 	    }
 	    msg[readSize]=0;
+
+
 		  }
 
 	}
